@@ -19,8 +19,13 @@
 .select-block .react-select .react-select__control {
     background: var(--color-input-background);
     border: 1px solid var(--color-line-in-white);
+    color: var(--color-text-base);
     border-radius: 0.8rem;
     font: 1.6rem Archivo;
+}
+
+.select-block .react-select .react-select__single-value {
+    color: var(--color-text-base);
 }
 
 .select-block:focus-within::after {
@@ -32,4 +37,34 @@
     left: 1.6rem;
     right: 1.6rem;
     bottom: 0;
+}
+
+@keyframes select-block-error {
+    from {
+        transform: scale3d(0, 0, 0);
+        transform: translate(-5px, -50px);
+        opacity: 0;
+    }
+    to {
+        transform: scale3d(1, 1, 1);
+        transform: translate(0, 0);
+        opacity: 0.7;
+    }
+}
+
+.select-block .error {
+    padding: 5px;
+    width: 100%;
+    border-radius: 0.8rem;
+
+    background: #FFF;
+    box-shadow: 0px 0px 4px rgba(0, 0, 0, 0.05);
+    
+    position: absolute;
+    left: 0;
+    top: 100%;
+    opacity: 0.7;
+
+    animation-name: select-block-error;
+    animation-duration: 0.2s;
 }

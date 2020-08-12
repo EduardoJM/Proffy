@@ -32,3 +32,33 @@
     right: 1.6rem;
     bottom: 0;
 }
+
+@keyframes masked-input-block-error {
+    from {
+        transform: scale3d(0, 0, 0);
+        transform: translate(-5px, -50px);
+        opacity: 0;
+    }
+    to {
+        transform: scale3d(1, 1, 1);
+        transform: translate(0, 0);
+        opacity: 0.7;
+    }
+}
+
+.masked-input-block .error {
+    padding: 5px;
+    width: 100%;
+    border-radius: 0.8rem;
+
+    background: #FFF;
+    box-shadow: 0px 0px 4px rgba(0, 0, 0, 0.05);
+    
+    position: absolute;
+    left: 0;
+    top: 100%;
+    opacity: 0.7;
+
+    animation-name: masked-input-block-error;
+    animation-duration: 0.2s;
+}

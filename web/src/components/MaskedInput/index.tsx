@@ -37,7 +37,7 @@ const MaskedInput: React.FC<MaskedInputProps> = ({ name, label, ...rest }) => {
                 {...rest}
             />
             {error && (
-                <span className="error-indicator">{error}</span>
+                <span className="error">{error}</span>
             )}
         </div>
     );
