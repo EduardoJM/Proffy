@@ -4,7 +4,7 @@ import { useHistory } from 'react-router-dom';
 import PageHeader from '../../components/PageHeader';
 import Input from '../../components/Input';
 import Textarea from '../../components/Textarea';
-import Select from '../../components/Select';
+import Select from '../../components/Select.old';
 
 import warningIcon from '../../assets/images/icons/warning.svg';
 
