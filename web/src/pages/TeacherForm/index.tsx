@@ -1,75 +1,112 @@
-import React, { useState, FormEvent } from 'react';
+import React, { useState, useRef } from 'react';
 import { useHistory } from 'react-router-dom';
+import { FormHandles } from '@unform/core';
+import { Form } from '@unform/web';
+import * as Yup from 'yup';
 
 import PageHeader from '../../components/PageHeader';
 import Input from '../../components/Input';
+import MaskedInput from '../../components/MaskedInput';
 import Textarea from '../../components/Textarea';
-import Select from '../../components/Select.old';
+import Select from '../../components/Select';
+
+import api from '../../services/api';
+import { Subjects, SubjectsValidation } from '../../data/subjects';
+import WeekDays from '../../data/weekDays';
 
 import warningIcon from '../../assets/images/icons/warning.svg';
 
-import api from '../../services/api';
-
 import './styles.css';
 
-interface ScheduleItem {
-    id: number; // only for map key
-    week_day: number;
-    from: string;
-    to: string;
-}
-
 function TeacherForm() {
-    const [name, setName] = useState('');
-    const [avatar, setAvatar] = useState('');
-    const [whatsapp, setWhatsapp] = useState('');
-    const [bio, setBio] = useState('');
-    const [subject, setSubject] = useState('');
-    const [cost, setCost] = useState('');
-
+    const formRef = useRef<FormHandles>(null);
     const history = useHistory();
-
-    const [scheduleItems, setScheduleItems] = useState<ScheduleItem[]>([
-        { id: Date.now(), week_day: 0, from: '', to: '' }
-    ]);
+    const [scheduleItemsCount, setScheduleItemsCount] = useState(1);
 
     function addNewScheduleItem() {
-        setScheduleItems([
-            ...scheduleItems,
-            { id: Date.now(), week_day: 0, from: '', to: '' }
-        ]);
+        setScheduleItemsCount(scheduleItemsCount + 1);
     }
 
-    function setScheduleItemValue(index: number, field: 'week_day' | 'from' | 'to', value: string) {
-        setScheduleItems(scheduleItems.map((item, idx) => {
-            if (idx !== index) {
-                return item;
+    async function handleCreateClass(data: any) {
+        try {
+            if (formRef.current) {
+                formRef.current.setErrors({});
             }
-            return {
-                ...item,
-                [field]: value
+            const schema = Yup.object().shape({
+                name: Yup.string().required(),
+                avatar: Yup.string().url().required(),
+                whatsapp: Yup.string().matches(/\(([0-9]){2}\) [0-9] ([0-9]){4}-([0-9]){4}/).required(),
+                bio: Yup.string().required(),
+                subject: Yup.string().oneOf(SubjectsValidation).required(),
+                cost: Yup.string().matches(/[0-9][0-9],[0-9][0-9]/).required(),
+                schedule: Yup.array().of(Yup.object().shape({
+                    week_day: Yup.number().oneOf([0, 1, 2, 3, 4, 5, 6]).required(),
+                    from: Yup.string().matches(/[0-9][0-9]:[0-9][0-9]/).required(),
+                    to: Yup.string().matches(/[0-9][0-9]:[0-9][0-9]/).required()
+                })),
+            });
+            await schema.validate(data, {
+              abortEarly: false,
+            });
+            const whatsapp = data.whatsapp
+                .replace('(', '')
+                .replace(')', '')
+                .replace('-', '')
+                .replace(' ', '')
+                .replace(' ', '');
+            const response = await api.post('classes', {
+                ...data,
+                whatsapp
+            });
+
+            if (response.status === 201) {
+                alert("Cadastro concluido!");
+                
+                history.push('/');
+            } else {
+                alert("Erro no cadastro!");
             };
-        }));
+        } catch (err) {
+            let validationErrors = {};
+            if (err instanceof Yup.ValidationError) {
+                if (formRef.current) {
+                    err.inner.forEach(error => {
+                        validationErrors = {
+                            ...validationErrors,
+                            [error.path]: error.message
+                        };
+                    });
+                    formRef.current.setErrors(validationErrors);
+                }
+            }
+        }
     }
 
-    function handleCreateClass(e: FormEvent) {
-        e.preventDefault();
-
-        api.post('classes', {
-            name,
-            avatar,
-            whatsapp,
-            bio,
-            subject,
-            cost: Number(cost),
-            schedule: scheduleItems
-        }).then(() => {
-            alert("Cadastro concluido!");
-            
-            history.push('/');
-        }).catch(() => {
-            alert("Erro no cadastro!");
-        });
+    const scheduleItems = [];
+    for (let i = 0; i < scheduleItemsCount; i += 1) {
+        scheduleItems.push((
+            <div key={i} className="schedule-item">
+                <Select
+                    name={`schedule[${i}].week_day`}
+                    label="Dia da semana"
+                    options={WeekDays}
+                />
+                <MaskedInput
+                    name={`schedule[${i}].from`}
+                    label="Das"
+                    mask="99:99"
+                    defaultValue="08:00"
+                    alwaysShowMask
+                />
+                <MaskedInput
+                    name={`schedule[${i}].to`}
+                    label="Até"
+                    mask="99:99"
+                    defaultValue="18:00"
+                    alwaysShowMask
+                />
+            </div>
+        ));
     }
 
     return (
@@ -80,33 +117,28 @@ function TeacherForm() {
             />
 
             <main>
-                <form onSubmit={handleCreateClass}>
+                <Form ref={formRef} onSubmit={handleCreateClass}>
                     <fieldset>
                         <legend>Seus dados</legend>
 
                         <Input
                             name="name"
                             label="Nome completo"
-                            value={name}
-                            onChange={(e) => setName(e.target.value)}
                         />
                         <Input
                             name="avatar"
                             label="Avatar"
-                            value={avatar}
-                            onChange={(e) => setAvatar(e.target.value)}
                         />
-                        <Input
+                        <MaskedInput
                             name="whatsapp"
                             label="WhatsApp"
-                            value={whatsapp}
-                            onChange={(e) => setWhatsapp(e.target.value)}
+                            mask="(99) 9 9999-9999"
+                            noFloatError
+                            alwaysShowMask
                         />
                         <Textarea
                             name="bio"
                             label="Biografia"
-                            value={bio}
-                            onChange={(e) => setBio(e.target.value)}
                         />
                     </fieldset>
                     <fieldset>
@@ -115,26 +147,16 @@ function TeacherForm() {
                         <Select
                             name="subject"
                             label="Matéria"
-                            options={[
-                                { value: 'Artes', label: 'Artes' },
-                                { value: 'Biologia', label: 'Biologia' },
-                                { value: 'Ciências', label: 'Ciências' },
-                                { value: 'Educação Física', label: 'Educação Física' },
-                                { value: 'Física', label: 'Física' },
-                                { value: 'Geografia', label: 'Geografia' },
-                                { value: 'História', label: 'História' },
-                                { value: 'Matemática', label: 'Matemática' },
-                                { value: 'Português', label: 'Português' },
-                                { value: 'Química', label: 'Química' }
-                            ]}
-                            value={subject}
-                            onChange={(e) => setSubject(e.target.value)}
+                            options={Subjects}
+                            noFloatError
                         />
-                        <Input
+                        <MaskedInput
                             name="cost"
                             label="Custo da sua hora por aula"
-                            value={cost}
-                            onChange={(e) => setCost(e.target.value)}
+                            mask="R$ 99,99"
+                            defaultValue="50,00"
+                            noFloatError
+                            alwaysShowMask
                         />
                     </fieldset>
 
@@ -146,39 +168,7 @@ function TeacherForm() {
                             </button>
                         </legend>
 
-                        {scheduleItems.map(((scheduleItem, index) => (
-                            <div key={scheduleItem.id} className="schedule-item">
-                                <Select
-                                    name="week_day"
-                                    label="Dia da semana"
-                                    options={[
-                                        { value: '0', label: 'Domingo' },
-                                        { value: '1', label: 'Segunda-feira' },
-                                        { value: '2', label: 'Terça-feira' },
-                                        { value: '3', label: 'Quarta-feira' },
-                                        { value: '4', label: 'Quinta-feira' },
-                                        { value: '5', label: 'Sexta-feira' },
-                                        { value: '6', label: 'Sabado' },
-                                    ]}
-                                    value={scheduleItem.week_day}
-                                    onChange={(e) => setScheduleItemValue(index, 'week_day', e.target.value)}
-                                />
-                                <Input
-                                    name="from"
-                                    label="Das"
-                                    type="time"
-                                    value={scheduleItem.from}
-                                    onChange={(e) => setScheduleItemValue(index, 'from', e.target.value)}
-                                />
-                                <Input
-                                    name="to"
-                                    label="Até"
-                                    type="time"
-                                    value={scheduleItem.to}
-                                    onChange={(e) => setScheduleItemValue(index, 'to', e.target.value)}
-                                />
-                            </div>
-                        )))}
+                        {scheduleItems}
                     </fieldset>
 
                     <footer>
@@ -191,7 +181,7 @@ function TeacherForm() {
                             Salvar cadastro
                         </button>
                     </footer>
-                </form>
+                </Form>
             </main>
         </div>
     );

@@ -7,9 +7,10 @@ import './styles.css';
 interface MaskedInputProps extends ReactMaskedInputProps {
     name: string;
     label: string;
+    noFloatError?: boolean;
 }
 
-const MaskedInput: React.FC<MaskedInputProps> = ({ name, label, ...rest }) => {
+const MaskedInput: React.FC<MaskedInputProps> = ({ name, label, noFloatError, ...rest }) => {
     const inputRef = useRef(null);
     const { fieldName, registerField, defaultValue, error } = useField(name);
 
@@ -28,18 +29,23 @@ const MaskedInput: React.FC<MaskedInputProps> = ({ name, label, ...rest }) => {
     }, [fieldName, registerField]);
 
     return (
-        <div className="masked-input-block">
-            <label htmlFor={name}>{label}</label>
-            <ReactInputMask
-                id={name}
-                ref={inputRef}
-                defaultValue={defaultValue}
-                {...rest}
-            />
-            {error && (
+        <>
+            <div className="masked-input-block">
+                <label htmlFor={name}>{label}</label>
+                <ReactInputMask
+                    id={name}
+                    ref={inputRef}
+                    defaultValue={defaultValue}
+                    {...rest}
+                />
+                {error && !noFloatError && (
+                    <span className="error">{error}</span>
+                )}
+            </div>
+            {error && noFloatError && (
                 <span className="error">{error}</span>
             )}
-        </div>
+        </>
     );
 }
 

@@ -14,7 +14,7 @@
     border-radius: 0.8rem;
     margin: -3.2rem auto 3.2rem;
     padding-top: 6.4rem;
-    overflow: hidden;
+    overflow: visible;
 }
 
 #page-teacher-form main fieldset {
@@ -52,12 +52,18 @@
 }
 
 #page-teacher-form main fieldset .input-block + .textarea-block,
-#page-teacher-form main fieldset .select-block + .input-block {
+#page-teacher-form main fieldset .select-block + .masked-input-block {
     margin-top: 2.4rem;
 }
 
 #page-teacher-form main label {
     color: var(--color-text-complement);
+}
+
+#page-teacher-form main .error {
+    font-size: 1.3rem;
+    display: block;
+    margin-bottom: 2rem;
 }
 
 #page-teacher-form main footer {
@@ -120,7 +126,7 @@
         column-gap: 1.6rem;
     }
 
-    #page-teacher-form main .schedule-item .input-block {
+    #page-teacher-form main .schedule-item .masked-input-block {
         margin-top: 0 !important;
     }
 

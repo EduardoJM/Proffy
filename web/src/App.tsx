@@ -10,9 +10,11 @@ function App() {
         setLocale({
             mixed: {
                 oneOf: '* O valor deve ser selecionado na lista.',
+                required: '* É um campo obrigatório.'
             },
             string: {
-                matches: '* O formato não corresponde.'
+                matches: '* O formato não corresponde.',
+                url: '* Precisa ser uma URL\\Link.'
             }
         });
     }, []);
