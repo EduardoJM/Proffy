@@ -35,4 +35,17 @@ describe('Test Proffy server', () => {
         // test with all filters
         testClassesGetWith('Matemática', 2, '08:00');
     });
+
+    it('should get connections route', (done) => {
+        request(app)
+            .get('/connections')
+            .expect(200)
+            .end((err, res) => {
+                if (err) {
+                    return done(err);
+                }
+                expect(res.body).toHaveProperty('total');
+                return done();
+            });
+    });
 });
