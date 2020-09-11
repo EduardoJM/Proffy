@@ -4,12 +4,20 @@
   "main": "index.js",
   "license": "MIT",
   "scripts": {
-    "start": "tsnd --transpile-only --ignore-watch node_modules --respawn src/server.ts",
-    "knex:migrate": "knex --knexfile knexfile.ts migrate:latest"
+    "start": "tsnd --transpile-only --ignore-watch node_modules --respawn src/index.ts",
+    "knex:migrate": "knex --knexfile knexfile.ts migrate:latest",
+    "test": "jest"
   },
   "devDependencies": {
+    "@babel/preset-env": "^7.11.5",
+    "@babel/preset-typescript": "^7.10.4",
     "@types/cors": "^2.8.7",
     "@types/express": "^4.17.7",
+    "@types/jest": "^26.0.13",
+    "@types/supertest": "^2.0.10",
+    "babel-jest": "^26.3.0",
+    "jest": "^26.4.2",
+    "supertest": "^4.0.2",
     "ts-node-dev": "^1.0.0-pre.56",
     "typescript": "^3.9.7"
   },
